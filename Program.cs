@@ -1,8 +1,13 @@
+using AzureStudyApi.Services;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
+builder.Services.AddScoped<BlobStorageService>();
 
 var app = builder.Build();
 
@@ -26,6 +31,8 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.MapHealthChecks("/health");
+
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
@@ -44,6 +51,25 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapPost("/upload", async (IFormFile file, [FromServices] BlobStorageService storage) =>
+{
+    await storage.UploadAsync(file.FileName, file.OpenReadStream());
+
+    return Results.Ok(new
+    {
+        file.FileName,
+        file.Length
+    });
+})
+.DisableAntiforgery();
+
+app.MapGet("/files", async ([FromServices] BlobStorageService storage) =>
+{
+    var files = await storage.ListAsync();
+
+    return Results.Ok(files);
+});
 
 app.MapGet("/testlog", (ILogger<Program> logger) =>
 {
@@ -66,14 +92,14 @@ app.MapGet("/db", (IConfiguration config) => {
 	});
 });
 
-app.MapGet("/health", () =>
-{
-    return Results.Ok(new
-    {
-        Status = "Healthy",
-        Time = DateTime.UtcNow
-    });
-});
+//app.MapGet("/health", () =>
+//{
+//    return Results.Ok(new
+//    {
+//        Status = "Healthy",
+//        Time = DateTime.UtcNow
+//    });
+//});
 
 app.MapGet("/version", () =>
 {
