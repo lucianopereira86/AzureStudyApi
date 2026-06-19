@@ -71,6 +71,12 @@ app.MapGet("/files", async ([FromServices] BlobStorageService storage) =>
     return Results.Ok(files);
 });
 
+app.MapGet("/files/{fileName}/download-url", ([FromRoute] string fileName, [FromServices] BlobStorageService storage) =>
+{
+    var url = storage.GenerateDownloadUrl(fileName);
+    return Results.Ok(new { Url = url });
+});
+
 app.MapGet("/testlog", (ILogger<Program> logger) =>
 {
     logger.LogInformation("Endpoint /testlog chamado em {Time}", DateTime.UtcNow);

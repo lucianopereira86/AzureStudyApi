@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Sas;
 
 namespace AzureStudyApi.Services
 {
@@ -26,6 +27,13 @@ namespace AzureStudyApi.Services
             }
 
             return files;
+        }
+
+        public Uri GenerateDownloadUrl(string fileName)
+        {
+            var blobClient = _container.GetBlobClient(fileName);
+            var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddMinutes(10));
+            return sasUri;
         }
     }
 }
