@@ -1,18 +1,20 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 
 namespace AzureStudyApi.Services
 {
     public class BlobStorageService
     {
+        private readonly BlobServiceClient _serviceClient;
         private readonly BlobContainerClient _container;
 
         public BlobStorageService(IConfiguration config)
         {
             string accountName = config["StorageAccountName"]!;
-            var serviceClient = new BlobServiceClient(new Uri($"https://{accountName}.blob.core.windows.net"), new DefaultAzureCredential());
-            _container = serviceClient.GetBlobContainerClient("documents");
+            _serviceClient = new BlobServiceClient(new Uri($"https://{accountName}.blob.core.windows.net"), new DefaultAzureCredential());
+            _container = _serviceClient.GetBlobContainerClient("documents");
         }
 
         public async Task UploadAsync(string fileName, Stream stream)
@@ -24,7 +26,7 @@ namespace AzureStudyApi.Services
         {
             var files = new List<string>();
 
-            await foreach(var blob in _container.GetBlobsAsync())
+            await foreach (var blob in _container.GetBlobsAsync())
             {
                 files.Add(blob.Name);
             }
@@ -32,11 +34,29 @@ namespace AzureStudyApi.Services
             return files;
         }
 
-        public Uri GenerateDownloadUrl(string fileName)
+        public async Task<Uri> GenerateDownloadUrlAsync(string fileName)
         {
             var blobClient = _container.GetBlobClient(fileName);
-            var sasUri = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.AddMinutes(10));
-            return sasUri;
+
+            var startsOn = DateTimeOffset.UtcNow.AddMinutes(-5);
+            var expiresOn = DateTimeOffset.UtcNow.AddMinutes(10);
+
+            var delegationKey = await _serviceClient.GetUserDelegationKeyAsync(new BlobGetUserDelegationKeyOptions(expiresOn) { StartsOn = startsOn });
+
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = _container.Name,
+                BlobName = fileName,
+                Resource = "b",
+                StartsOn = startsOn,
+                ExpiresOn = expiresOn
+            };
+
+            sasBuilder.SetPermissions(BlobSasPermissions.Read);
+
+            var sasQuery = sasBuilder.ToSasQueryParameters(delegationKey, _serviceClient.AccountName);
+
+            return new Uri($"{blobClient.Uri}?{sasQuery}");
         }
     }
 }

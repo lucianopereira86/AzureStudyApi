@@ -71,9 +71,9 @@ app.MapGet("/files", async ([FromServices] BlobStorageService storage) =>
     return Results.Ok(files);
 });
 
-app.MapGet("/files/{fileName}/download-url", ([FromRoute] string fileName, [FromServices] BlobStorageService storage) =>
+app.MapGet("/files/{fileName}/download-url", async ([FromRoute] string fileName, [FromServices] BlobStorageService storage) =>
 {
-    var url = storage.GenerateDownloadUrl(fileName);
+    var url = await storage.GenerateDownloadUrlAsync(fileName);
     return Results.Ok(new { Url = url });
 });
 
