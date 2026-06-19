@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 
 namespace AzureStudyApi.Services
@@ -9,7 +10,9 @@ namespace AzureStudyApi.Services
 
         public BlobStorageService(IConfiguration config)
         {
-            _container = new BlobContainerClient(config["StorageConnection"], "documents");
+            string accountName = config["StorageAccountName"]!;
+            var serviceClient = new BlobServiceClient(new Uri($"https://{accountName}.blob.core.windows.net"), new DefaultAzureCredential());
+            _container = serviceClient.GetBlobContainerClient("documents");
         }
 
         public async Task UploadAsync(string fileName, Stream stream)
