@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿
+using Azure.Identity;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
@@ -13,7 +14,8 @@ namespace AzureStudyApi.Services
         public BlobStorageService(IConfiguration config)
         {
             string accountName = config["StorageAccountName"]!;
-            _serviceClient = new BlobServiceClient(new Uri($"https://{accountName}.blob.core.windows.net"), new DefaultAzureCredential());
+            var blobUri = new Uri($"https://{accountName}.blob.core.windows.net");
+            _serviceClient = new BlobServiceClient(blobUri, new DefaultAzureCredential());
             _container = _serviceClient.GetBlobContainerClient("documents");
         }
 

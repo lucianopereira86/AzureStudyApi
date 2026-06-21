@@ -1,5 +1,8 @@
 using AzureStudyApi.Services;
+using AzureStudyDomain.Models;
+using AzureStudyInfra.Configurations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 builder.Services.AddScoped<BlobStorageService>();
+builder.Services.AddDbContext<AppDbContext>(
+    options =>
+        options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -92,10 +99,53 @@ app.MapGet("/config", (IConfiguration config) =>
 });
 
 app.MapGet("/db", (IConfiguration config) => {
-	return Results.Ok(new 
+    return Results.Ok(new 
 	{
 		ConnectionString = config.GetConnectionString("DefaultConnection")
 	});
+});
+
+app.MapPost("/products", async(Product product, AppDbContext db) =>
+{
+    db.Products.Add(product);
+    await db.SaveChangesAsync();
+    return Results.Created($"/products/{product.Id}", product);
+});
+
+app.MapPut("/products/{id}", async (int id, Product request, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+
+    if (product is null)
+        return Results.NotFound();
+
+    product.Name = request.Name;
+    product.Price = request.Price;
+    product.Category = request.Category;
+
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
+
+app.MapDelete("/products/{id}", async (int id, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+
+    if (product is null)
+        return Results.NotFound();
+
+    db.Products.Remove(product);
+    await db.SaveChangesAsync();
+
+    return Results.NoContent();
+});
+
+app.MapGet("/products",
+async (AppDbContext db) =>
+{
+    return await db.Products.ToListAsync();
 });
 
 //app.MapGet("/health", () =>

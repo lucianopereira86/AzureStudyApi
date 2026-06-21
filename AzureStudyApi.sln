@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.6.11819.183 stable
+VisualStudioVersion = 18.6.11819.183
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStudyApi", "AzureStudyApi.csproj", "{4CFBD1D7-9D3F-BF34-F771-FB6FBB4DA866}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStudyApi", "src\AzureStudyApi\AzureStudyApi.csproj", "{4CFBD1D7-9D3F-BF34-F771-FB6FBB4DA866}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStudyInfra", "src\AzureStudyInfra\AzureStudyInfra.csproj", "{54FA930F-EDC2-45C2-9F54-0D935C9D939D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureStudyDomain", "src\AzureStudyDomain\AzureStudyDomain.csproj", "{7D4C2554-099E-446F-9E5F-CE9FA292478B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{4CFBD1D7-9D3F-BF34-F771-FB6FBB4DA866}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CFBD1D7-9D3F-BF34-F771-FB6FBB4DA866}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CFBD1D7-9D3F-BF34-F771-FB6FBB4DA866}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54FA930F-EDC2-45C2-9F54-0D935C9D939D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54FA930F-EDC2-45C2-9F54-0D935C9D939D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54FA930F-EDC2-45C2-9F54-0D935C9D939D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54FA930F-EDC2-45C2-9F54-0D935C9D939D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D4C2554-099E-446F-9E5F-CE9FA292478B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D4C2554-099E-446F-9E5F-CE9FA292478B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D4C2554-099E-446F-9E5F-CE9FA292478B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D4C2554-099E-446F-9E5F-CE9FA292478B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
