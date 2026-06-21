@@ -14,7 +14,8 @@ builder.Services.AddScoped<BlobStorageService>();
 builder.Services.AddDbContext<AppDbContext>(
     options =>
         options.UseSqlServer(
-            builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Configuration.GetConnectionString("DefaultConnection"), 
+            sql => sql.EnableRetryOnFailure()));
 
 var app = builder.Build();
 
@@ -145,7 +146,13 @@ app.MapDelete("/products/{id}", async (int id, AppDbContext db) =>
 app.MapGet("/products",
 async (AppDbContext db) =>
 {
-    return await db.Products.ToListAsync();
+    return await db.Products.AsNoTracking().ToListAsync();
+});
+
+app.MapGet("/products-summary",
+async (AppDbContext db) =>
+{
+    return await db.Products.AsNoTracking().OrderBy(o => o.Id).Select(s => new { s.Name, s.Price }).ToListAsync();
 });
 
 //app.MapGet("/health", () =>
