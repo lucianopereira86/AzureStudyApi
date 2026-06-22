@@ -105,6 +105,24 @@ app.MapPost("/orders", async (ServiceBusClient client) =>
     return Results.Ok("Mensagem enviada");
 });
 
+app.MapPost("/orders-topic", async (ServiceBusClient client) =>
+{
+    var sender = client.CreateSender("orders-created");
+
+    var message = new ServiceBusMessage(
+        """
+        {
+            "orderId": 100,
+            "customer": "Luciano",
+            "total": 500            
+        }
+        """);
+
+    await sender.SendMessageAsync(message);
+
+    return Results.Ok("Evento publicado");
+});
+
 app.MapPost("/upload", async (IFormFile file, [FromServices] BlobStorageService storage) =>
 {
     await storage.UploadAsync(file.FileName, file.OpenReadStream());
