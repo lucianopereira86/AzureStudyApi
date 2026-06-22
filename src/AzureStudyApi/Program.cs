@@ -118,6 +118,8 @@ app.MapPost("/orders-topic", async (ServiceBusClient client) =>
         }
         """);
 
+    message.ApplicationProperties["Country"] = "BR";
+
     await sender.SendMessageAsync(message);
 
     return Results.Ok("Evento publicado");
