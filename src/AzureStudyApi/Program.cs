@@ -110,22 +110,34 @@ app.MapPost("/orders", async (ServiceBusClient client) =>
 
 app.MapPost("/orders-topic", async (ServiceBusClient client, TelemetryClient telemetry) =>
 {
-    telemetry.TrackEvent("OrderCreated");
+    var orderId = 100;
+    var customer = "Luciano";
+    var country = "BR";
+    var total = 500.0;
+
     var sender = client.CreateSender("orders-created");
 
     var message = new ServiceBusMessage(
-        """
+        $$"""
         {
-            "orderId": 100,
-            "customer": "Luciano",
-            "total": 500            
+            "orderId": {{orderId}},
+            "customer": "{{customer}}",
+            "total": {{total}}
         }
         """);
 
-    message.ApplicationProperties["Country"] = "BR";
+    message.ApplicationProperties["Country"] = country;
 
     await sender.SendMessageAsync(message);
 
+    telemetry.TrackEvent(
+        "OrderCreated",
+        new Dictionary<string, string>
+        {
+            ["Customer"] = customer,
+            ["Country"] = country,
+            ["OrderTotal"] = total.ToString()
+        });
     return Results.Ok("Evento publicado");
 });
 
