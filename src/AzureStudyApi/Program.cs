@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
+using Microsoft.ApplicationInsights;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -107,8 +108,9 @@ app.MapPost("/orders", async (ServiceBusClient client) =>
     return Results.Ok("Mensagem enviada");
 });
 
-app.MapPost("/orders-topic", async (ServiceBusClient client) =>
+app.MapPost("/orders-topic", async (ServiceBusClient client, TelemetryClient telemetry) =>
 {
+    telemetry.TrackEvent("OrderCreated");
     var sender = client.CreateSender("orders-created");
 
     var message = new ServiceBusMessage(
