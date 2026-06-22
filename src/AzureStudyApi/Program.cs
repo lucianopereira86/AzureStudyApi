@@ -4,7 +4,7 @@ using AzureStudyInfra.Configurations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
+using Azure.Messaging.ServiceBus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(
 
 var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
 builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl!), new DefaultAzureCredential());
+builder.Services.AddSingleton(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new ServiceBusClient(config["ServiceBusConnectionString"]!);
+});
 
 var app = builder.Build();
 
@@ -82,6 +87,23 @@ app.MapGet("/config-secret", async (IConfiguration config) =>
 //        SecretValue = secret.Value.Value
 //    });
 //});
+
+app.MapPost("/orders", async (ServiceBusClient client) =>
+{
+    var sender = client.CreateSender("orders");
+
+    var message = new ServiceBusMessage(
+        """
+        {
+            "orderId": 1,
+            "customer": "Luciano",
+            "total": 100
+        }
+        """);
+    await sender.SendMessageAsync(message);
+
+    return Results.Ok("Mensagem enviada");
+});
 
 app.MapPost("/upload", async (IFormFile file, [FromServices] BlobStorageService storage) =>
 {
