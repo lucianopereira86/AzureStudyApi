@@ -3,6 +3,8 @@ using AzureStudyDomain.Models;
 using AzureStudyInfra.Configurations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +61,19 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapGet("/secret-test", async (IConfiguration config) =>
+{
+    var keyVaultUrl = config["KeyVaultUrl"];
+
+    var client = new SecretClient(new Uri(keyVaultUrl!), new DefaultAzureCredential());
+
+    var secret = await client.GetSecretAsync("OpenAiApiKey");
+    return Results.Ok(new { 
+        SecretName = secret.Value.Name,
+        SecretValue = secret.Value.Value
+    });
+});
 
 app.MapPost("/upload", async (IFormFile file, [FromServices] BlobStorageService storage) =>
 {
