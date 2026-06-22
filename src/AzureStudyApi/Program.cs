@@ -19,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(
             builder.Configuration.GetConnectionString("DefaultConnection"), 
             sql => sql.EnableRetryOnFailure()));
 
+var keyVaultUrl = builder.Configuration["KeyVaultUrl"];
+builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl!), new DefaultAzureCredential());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -62,18 +65,23 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
-app.MapGet("/secret-test", async (IConfiguration config) =>
+app.MapGet("/config-secret", async (IConfiguration config) =>
 {
-    var keyVaultUrl = config["KeyVaultUrl"];
-
-    var client = new SecretClient(new Uri(keyVaultUrl!), new DefaultAzureCredential());
-
-    var secret = await client.GetSecretAsync("OpenAiApiKey");
-    return Results.Ok(new { 
-        SecretName = secret.Value.Name,
-        SecretValue = secret.Value.Value
-    });
+    return Results.Ok(config["OpenAiApiKey"]);
 });
+
+//app.MapGet("/secret-test", async (IConfiguration config) =>
+//{
+//    var keyVaultUrl = config["KeyVaultUrl"];
+
+//    var client = new SecretClient(new Uri(keyVaultUrl!), new DefaultAzureCredential());
+
+//    var secret = await client.GetSecretAsync("OpenAiApiKey");
+//    return Results.Ok(new { 
+//        SecretName = secret.Value.Name,
+//        SecretValue = secret.Value.Value
+//    });
+//});
 
 app.MapPost("/upload", async (IFormFile file, [FromServices] BlobStorageService storage) =>
 {
