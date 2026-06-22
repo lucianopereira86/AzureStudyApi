@@ -130,13 +130,17 @@ app.MapPost("/orders-topic", async (ServiceBusClient client, TelemetryClient tel
 
     await sender.SendMessageAsync(message);
 
+
     telemetry.TrackEvent(
         "OrderCreated",
         new Dictionary<string, string>
         {
             ["Customer"] = customer,
             ["Country"] = country,
-            ["OrderTotal"] = total.ToString()
+        },
+        new Dictionary<string, double>
+        {
+            ["OrderTotal"] = total
         });
     return Results.Ok("Evento publicado");
 });
